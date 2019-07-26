@@ -1,0 +1,133 @@
+  function buildHtmlTable(selector,myList) {
+    var columns = addAllColumnHeaders(myList, selector);
+
+    var sprite = false;
+    for (var i = 0; i < myList.length; i++) {
+      var row$ = $('<tr/>');
+      for (var colIndex = 0; colIndex < columns.length; colIndex++) {
+        var cellValue = myList[i][columns[colIndex]];
+        if (cellValue == null) cellValue = "";
+        if(sprite){
+          row$.append($('<td/>').html(cellValue));
+          sprite = false;
+        } else{
+          if(String(cellValue).length < 3) {
+            cellValue = expandID(cellValue)
+          }
+          row$.append($('<td/>').html('<img id="theImg" src="/icons/'+cellValue+'.png" />'+cellValue));
+          sprite = true;
+        }
+      }
+      $(selector).append(row$);
+    }
+  }
+
+
+
+
+api=>
+CREATE TABLE pokemon (
+  ID SERIAL PRIMARY KEY,
+  name VARCHAR(30),
+  type VARCHAR(30),
+  rating INT DEFAULT 0,
+  wins INT DEFAULT 0,
+  losses INT DEFAULT 0
+);
+
+COPY pokemon(name,type,rating,wins) 
+FROM '/Users/gwadley/rankEmAll/allPkm.txt' DELIMITER ',' CSV HEADER;
+
+
+const getPokemonById = (request, response) => {
+  const id = parseInt(request.params.id)
+  pool.query('SELECT id,name FROM pokemon WHERE id = $1', [id], (error, results) => {
+    if (error) {
+      throw error
+    }
+    response.status(200).json(results.rows)
+  })
+
+}
+
+const updateRanking = (request, response) => {
+  const id = parseInt(request.params.id)
+  const rating = parseInt(request.body["rating"])
+
+  pool.query(
+    'UPDATE pokemon SET rating = $2 WHERE id = $1',
+    [id,rating],
+    (error, results) => {
+      if (error) {
+        throw error
+      }
+      response.status(200).send(`User modified with ID: ${id}`)
+    }
+  )
+}
+
+
+
+  // Builds the HTML Table out of myList.
+  function buildHtmlTable(selector,myList) {
+    var columns = addAllColumnHeaders(myList, selector);
+
+    var sprite = false;
+    var rank=1;
+    for (var i = 0; i < myList.length; i++) {
+      var row$ = $('<tr/>');
+      for (var colIndex = 0; colIndex < columns.length; colIndex++) {
+        var cellValue = myList[i][columns[colIndex]];
+        if (cellValue == null) cellValue = "";
+        if(sprite){
+          row$.append($('<td/>').html(cellValue));
+          sprite = false;
+        } else{
+          if(String(cellValue).length < 3) {
+            cellValue = expandID(cellValue)
+          }
+          row$.append($('<td/>').html('<img id="theImg" src="/icons/'+cellValue+'.png" />'+cellValue));
+          row$.prepend($('<td/>').html(rank+""));
+          rank+=1;
+          sprite = true;
+        }
+      }
+      $(selector).append(row$);
+    }
+  }
+
+  // Adds a header row to the table and returns the set of columns.
+  // Need to do union of keys from all records as some records may not contain
+  // all records.
+  function addAllColumnHeaders(myList, selector) {
+    var columnSet = [];
+    var headerTr$ = $('<tr/>');
+
+    for (var i = 0; i < myList.length; i++) {
+      var rowHash = myList[i];
+      for (var key in rowHash) {
+        if ($.inArray(key, columnSet) == -1) {
+          columnSet.push(key);
+          headerTr$.append($('<th/>').html(key));
+        }
+      }
+    }
+    headerTr$.prepend($('<th/>').html("Rank"))
+    $(selector).append(headerTr$);
+    console.log(columnSet)
+    return columnSet;
+  }
+
+  function columnData(){
+    var headerTr$ = $('<tr/>');
+    var columnSet=["Rank","ID","Name"];
+    columnSet.forEach(function(item,index){
+      headerTr$.append($('<th/>').html(item));
+    })
+    $('#excelDataTable').append(headerTr$);
+
+    return columnSet;
+  }
+
+
+

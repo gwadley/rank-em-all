@@ -1,0 +1,142 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Gotta Rank 'Em All</title>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/handlebars.js/2.0.0-alpha.1/handlebars.min.js"></script>
+    <script src="https://code.jquery.com/jquery-1.10.1.min.js"></script>
+    <script src="https://use.fontawesome.com/f692544140.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.5/js/bootstrap.min.js"></script>
+    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css">
+    <style type="text/css">
+      #login, #loggedin {
+        display: none;
+      }
+      .text-overflow {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        width: 500px;
+      }
+      .pokemon {
+        width:128px;
+        margin: 10px;
+        border: 2px solid red;
+        border-radius: 500px;
+        -webkit-border-radius: 500px;
+        -moz-border-radius: 500px;
+      }
+    </style>
+  </head>
+
+  <body onload="getPkmPair()">
+  <div class="page-header">
+    <h1 style="margin:20px">Gotta Rank 'Em All <small> <a href="./index.html"> Rank Pokemon</a> |<a href="./ranks.html"> View Standings</a> </small>
+    <div id="links" class="pull-right">
+      <a href="//www.reddit.com/submit" onclick="window.location = '//www.reddit.com/submit?url=' + encodeURIComponent(window.location.href.split("#")[0]); return false"><i class="fa fa-reddit" style="color:#ee1515;" aria-hidden="true"></i></a>
+      <a href="https://www.facebook.com/sharer/sharer.php?u=https://album-eliminator.herokuapp.com/&description=Rank all 809 Pokemon" target="_blank"><i class="fa fa-facebook" style="color:#ee1515;" aria-hidden="true"></i></a>
+      <a href="https://github.com/grwadley"><i class="fa fa-github" style="color:#ee1515;" aria-hidden="true"></i></a>
+    </div>
+    </h1>
+  </div> 
+
+  <div class="container-fluid">
+    <div class="row">
+      <div class="col-md-10 col-md-offset-1">
+        <div class="alert alert-info alert-dismissible text-center" id="infobox">
+              <h4 class="alert-heading">Lets Rank all 809 Pokemon!</h4>
+              <p>Simply pick your favorite pokemon out of each pair, and we'll pull up another matchup for you.</p>
+              <p>Head on over to the Standings page if you want to see how things are shaking out</p>
+        </div>
+      </div>
+    </div>
+  <div id="matchup">
+  </div>
+
+
+  <script id="matchup-source" type="text/x-handlebars-template">
+    <br></br>
+    <div class="row">
+      <div class="col-sm-4 col-md-offset-2" align="center"><!--Column left-->
+        <img class="pokemon" id="pic1" src="{{picture1}}" style="cursor:pointer">
+        <div class="caption">
+          <h3>#{{id1}}</h3>
+          <h3>{{pokemon1}}</h3>
+        </div>
+      </div>
+      <div class="col-sm-4 " align="center"><!--Column left-->
+        <img class="pokemon" id="pic2" src="{{picture2}}" style="cursor:pointer">
+        <div class="caption">
+          <h3>#{{id2}}</h3>
+          <h3>{{pokemon2}}</h3>
+        </div>
+      </div>
+  </div>
+  </script>
+
+  <script>
+    //This function is called onload to get 2 pokemon, and all other functions are called by it (essentially)
+    function getPkmPair(){
+      $.ajax({
+        type: "GET",
+        url: "http://localhost:3000/getPokemonPair",
+        success: function(response){
+          pk1=response[0];
+          pk2=response[1];
+          showMatchup();     
+        }
+      })
+    }
+
+    //This function takes the data returned by the DB and transforms it into JSON for the handlebars template to consume
+    function showMatchup(){
+      var matchup = {
+        pokemon1: pk1["name"],
+        id1: pk1["id"],
+        picture1:"/pokedex/"+pk1["name"].toLowerCase()+".png",
+        pokemon2: pk2["name"],
+        id2: pk2["id"],
+        picture2: "/pokedex/"+pk2["name"].toLowerCase()+".png"
+      }
+
+      matchupPlaceholder.innerHTML=matchupTempalte(matchup);
+      $( "#pic1" ).click(function() {
+        sendChoice(true);
+        $("#infobox").hide();
+      });
+
+      $( "#pic2" ).click(function() {
+        sendChoice(false);
+        $("#infobox").hide();
+      });
+    }
+
+    //both buttons are attached to this method. It takes a boolean to determine which pokemon won, and sends the data from pk1 and pk2 along with that bool to
+    //the server side to update rankings. When it's done, it calls the base function to reload the contents.
+    function sendChoice(win){
+      sendData = {
+        pokemon1:pk1["id"],
+        pokemon2:pk2["id"],
+        win:win
+      }
+      console.log(sendData)
+
+      $.ajax({
+        type:"POST",
+        url: "http://localhost:3000/updateRankings",
+        data: JSON.stringify(sendData),
+        contentType: "application/json",
+        success: function(response){
+          getPkmPair();
+        }
+      })
+    }
+
+    var pk1;
+    var pk2;
+
+    var matchupSource = document.getElementById("matchup-source").innerHTML,
+        matchupTempalte = Handlebars.compile(matchupSource),
+        matchupPlaceholder = document.getElementById("matchup")
+  </script>
+  </body>
+</html>

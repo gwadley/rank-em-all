@@ -1,0 +1,91 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Ranks</title>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/handlebars.js/2.0.0-alpha.1/handlebars.min.js"></script>
+    <script src="https://code.jquery.com/jquery-1.10.1.min.js"></script>
+    <script src="https://use.fontawesome.com/f692544140.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.5/js/bootstrap.min.js"></script>
+    <script src="//cdn.datatables.net/1.10.19/js/jquery.dataTables.min.js"></script>
+
+    <link rel="stylesheet" href="//cdn.datatables.net/1.10.19/css/jquery.dataTables.min.css">
+    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css">
+    <link rel="stylesheet" href="table.css">
+    <style type="text/css">
+      #login, #loggedin {
+        display: none;
+      }
+      .text-overflow {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        width: 500px;
+      }
+    </style>
+  </head>
+
+  <body onLoad="getRankingData('#rankingTable')">
+    <div class="page-header">
+      <h1 style="margin:20px">Gotta Rank 'Em All <small> <a href="./index.html"> Rank Pokemon</a> |<a href="./ranks.html"> View Standings</a> </small>
+      <div id="links" class="pull-right">
+        <a href="//www.reddit.com/submit" onclick="window.location = '//www.reddit.com/submit?url=' + encodeURIComponent(window.location.href.split("#")[0]); return false"><i class="fa fa-reddit" aria-hidden="true"></i></a>
+        <a href="https://www.facebook.com/sharer/sharer.php?u=https://album-eliminator.herokuapp.com/&description=Pick an album, pick again, find out your top 10" target="_blank"><i class="fa fa-facebook" aria-hidden="true"></i></a>
+        <a href="https://github.com/grwadley/AlbumEliminator"><i class="fa fa-github" aria-hidden="true"></i></a>
+      </div>
+      </h1>
+    </div>
+    <div class="row">
+      <div class="col col-md-6 col-md-offset-3">
+        <table id="rankingTable" class="dataTable hover stripe" style="width: 100%;" role="grid">
+          <thead>
+            <tr role="row">
+              <th class="sorting_desc" aria-label="Rank: active to sort column ascending" aria-sort="descending">Rank</th>
+              <th class="sorting_desc" aria-label="Number: active to sort column ascending" aria-sort="descending">#</th>
+              <th class="sorting_desc" aria-label="Name: active to sort column ascending" aria-sort="descending">Name</th>
+              <th class="sorting_desc" aria-label="Name: active to sort column ascending" aria-sort="descending">Rating</th>
+            </tr>
+          </thead>
+        </table>
+      </div>
+    </div>
+  </body>
+  <script>
+
+  function getRankingData(){
+    $.ajax({
+      url: "http://localhost:3000/pokemonRanked/",
+      success: function(response){
+        //buildHtmlTable('#rankingTable',response);
+        addTableData('#rankingTable',response);
+        $("#rankingTable").DataTable({
+          "lengthMenu": [[50, 100, 200, -1], [50, 100, 200, "All"]]
+        });
+      }
+    })
+  }
+
+  function addTableData(selector,myList){
+    myList.forEach(function (item,index){
+      var row$= $('<tr/>');
+      row$.append($('<td/>').html(index+1))
+      id = expandID(item.id)
+      row$.append($('<td/>').html('<img id="theImg" src="/icons/'+id+'.png" />'+id))
+      row$.append($('<td/>').html(item.name))
+      row$.append($('<td/>').html(item.rating))
+
+
+      $(selector).append(row$);
+    });
+  }
+
+
+  function expandID(pkID){
+      var id = String(pkID)
+      while(id.length < 3){
+        id = "0"+id;
+      }
+      return id;
+    }
+  </script>
+  </body>
+</html>
