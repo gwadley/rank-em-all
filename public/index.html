@@ -18,7 +18,7 @@
         width: 500px;
       }
       .pokemon {
-        width:128px;
+        width:150px;
         margin: 10px;
         border: 2px solid red;
         border-radius: 500px;
@@ -80,8 +80,9 @@
         type: "GET",
         url: "http://localhost:3000/getPokemonPair",
         success: function(response){
-          pk1=response[0];
-          pk2=response[1];
+          csrfToken=response[0];
+          pk1=response[1];
+          pk2=response[2];
           showMatchup();     
         }
       })
@@ -122,6 +123,10 @@
 
       $.ajax({
         type:"POST",
+        credentials: 'same-origin',
+        headers: {
+          'CSRF-Token': csrfToken 
+        },
         url: "http://localhost:3000/updateRankings",
         data: JSON.stringify(sendData),
         contentType: "application/json",
@@ -133,6 +138,7 @@
 
     var pk1;
     var pk2;
+    var csrfToken;
 
     var matchupSource = document.getElementById("matchup-source").innerHTML,
         matchupTempalte = Handlebars.compile(matchupSource),

@@ -3,7 +3,23 @@ const bodyParser = require('body-parser')
 const app = express()
 const db = require('./queries')
 const port = 3000
+const rateLimit = require("express-rate-limit");
+
 var EloRating = require('elo-rating');
+
+const csurf = require('csurf');
+const cookieParser = require('cookie-parser');
+
+var csrfProtection = csurf({ cookie: true })
+
+const limiter = rateLimit({
+  windowMs: 60 * 1000, // 15 minutes
+  max: 60 // limit each IP to 100 requests per windowMs
+});
+
+app.use("/getPokemonPair",limiter);
+app.use("/updateRankings",limiter);
+
 
 app.use(bodyParser.json())
 app.use(
@@ -13,6 +29,7 @@ app.use(
 )
 
 app.use(express.static('public'))
+app.use(cookieParser());
 
 
 app.get('/', function(req, res) {
@@ -24,8 +41,8 @@ app.get('/pokemonRanked',db.getPokemonRanked)
 
 //The UI calls this function to get 2 pokemon for the user to choose between. Because the calls to the DB are asyncronous, we first ask for data for a specific ID
 //Then when that is complete, ask for data for a pokemon within an acceptable ELO range (default 50)
-app.get('/getPokemonPair', function(req,res){
-	var returnData=[]
+app.get('/getPokemonPair', csrfProtection, function(req,res){
+	var returnData=[req.csrfToken()]
 	var r1 = Math.floor(Math.random() * 809)+1;
 	getAllPokemonData(r1).then(function(value){
 		returnData.push(value[0]);
@@ -49,7 +66,7 @@ where win is a boolean value for whether pokemon1 was chosen. We do this through
 
 It then makes calls to the DB to update ratings of both pokemon
 */
-app.post('/updateRankings', function(req,res){
+app.post('/updateRankings', csrfProtection, function(req,res){
 
 	var id1="";
 	var id2="";
