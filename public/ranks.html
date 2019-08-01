@@ -53,7 +53,7 @@
 
   function getRankingData(){
     $.ajax({
-      url: "http://localhost:3000/pokemonRanked/",
+      url: "/pokemonRanked/",
       success: function(response){
         //buildHtmlTable('#rankingTable',response);
         addTableData('#rankingTable',response);

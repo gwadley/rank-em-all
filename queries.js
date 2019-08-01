@@ -41,7 +41,7 @@ getFairPokemonMatchup = async function(id,rating,range){
     throw error
   }
 
-  if(data.hasOwnProperty("rows")){
+  if(parseInt(data.rowCount) >0){
     return data.rows;
   } else{
     return getFairPokemonMatchup(id,rating,range+50);

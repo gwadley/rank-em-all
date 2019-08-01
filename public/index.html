@@ -78,7 +78,7 @@
     function getPkmPair(){
       $.ajax({
         type: "GET",
-        url: "http://localhost:3000/getPokemonPair",
+        url: "/getPokemonPair",
         success: function(response){
           csrfToken=response[0];
           pk1=response[1];
@@ -127,7 +127,7 @@
         headers: {
           'CSRF-Token': csrfToken 
         },
-        url: "http://localhost:3000/updateRankings",
+        url: "/updateRankings",
         data: JSON.stringify(sendData),
         contentType: "application/json",
         success: function(response){
