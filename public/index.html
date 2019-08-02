@@ -33,7 +33,7 @@
     <h1 style="margin:20px">Gotta Rank 'Em All <small> <a href="./index.html"> Rank Pokemon</a> |<a href="./ranks.html"> View Standings</a> </small>
     <div id="links" class="pull-right">
       <a href="//www.reddit.com/submit" onclick="window.location = '//www.reddit.com/submit?url=' + encodeURIComponent(window.location.href.split("#")[0]); return false"><i class="fa fa-reddit" style="color:#ee1515;" aria-hidden="true"></i></a>
-      <a href="https://www.facebook.com/sharer/sharer.php?u=https://album-eliminator.herokuapp.com/&description=Rank all 809 Pokemon" target="_blank"><i class="fa fa-facebook" style="color:#ee1515;" aria-hidden="true"></i></a>
+      <a href="https://www.facebook.com/sharer/sharer.php?u=https://gotta-rank-em-all.herokuapp.com/&description=Rank all 809 Pokemon" target="_blank"><i class="fa fa-facebook" style="color:#ee1515;" aria-hidden="true"></i></a>
       <a href="https://github.com/grwadley"><i class="fa fa-github" style="color:#ee1515;" aria-hidden="true"></i></a>
     </div>
     </h1>
@@ -80,7 +80,7 @@
         type: "GET",
         url: "/getPokemonPair",
         success: function(response){
-          csrfToken=response[0];
+          UUID=response[0];
           pk1=response[1];
           pk2=response[2];
           showMatchup();     
@@ -117,16 +117,13 @@
       sendData = {
         pokemon1:pk1["id"],
         pokemon2:pk2["id"],
-        win:win
+        win:win,
+        token:UUID
       }
       console.log(sendData)
 
       $.ajax({
         type:"POST",
-        credentials: 'same-origin',
-        headers: {
-          'CSRF-Token': csrfToken 
-        },
         url: "/updateRankings",
         data: JSON.stringify(sendData),
         contentType: "application/json",
@@ -138,7 +135,7 @@
 
     var pk1;
     var pk2;
-    var csrfToken;
+    var UUID;
 
     var matchupSource = document.getElementById("matchup-source").innerHTML,
         matchupTempalte = Handlebars.compile(matchupSource),
