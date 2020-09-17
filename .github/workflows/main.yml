@@ -9,3 +9,5 @@ jobs:
       uses: snyk/actions/node@master
       env:
         SNYK_TOKEN: 9d493f50-6305-4175-b445-b0ab98c2d76b
+      with:
+        command: monitor
